@@ -353,6 +353,22 @@ input[type=submit]:hover {
     background: #be5c00
 }
 
+#video, #photoPreview{
+
+    border: 1px solid #000000;
+    border-radius: 10px;
+
+    align-self: center;
+    background-color: green;
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    -moz-transform:rotateY(180deg); /* Firefox */
+    -ms-transform:rotateY(180deg); /* IE 9 */
+    -o-transform:rotateY(180deg); /* Opera */
+
+    margin: 10px;
+}
+
 .lite {
     background: #fff
 }

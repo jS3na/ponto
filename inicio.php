@@ -32,8 +32,6 @@ if (!$_SESSION['logado']) {
 $trabalhando = '';
 $funcionario_id = 'aaaa';
 
-date_default_timezone_set('America/Sao_Paulo');
-
 $hoje_TOTAL = date('Y-m-d');
 
 include("config.php");
@@ -99,89 +97,21 @@ if (isset($_GET['id'])) {
 
     // Recebe os dados do formulário
 
+    //echo $funcionario_cpf;
+
     if(isset($_POST['entrar'])){
 
-        $sql_verifica = "SELECT f.id, p.hora_entrada
-                    FROM funcionarios f 
-                    LEFT JOIN pontos p ON f.id = p.funcionario_id 
-                    WHERE f.cpf = ? AND data = ?";
-
-        $stmt = $conn->prepare($sql_verifica);
-        if (!$stmt) {
-            echo "Erro na preparação da consulta: " . $conn->error;
-            exit();
-        }
-        $stmt->bind_param("ss", $funcionario_cpf, $hoje_TOTAL);
-        $stmt->execute();
-        $result3 = $stmt->get_result();
-        $row3 = $result3->fetch_assoc();
-
-        if(is_null($row3)){
-
-            $trabalhando = "trabalhando";
-
-            $hoje_entrar = date('Y-m-d');
-            $horario = date('H:i');
-
-            // Inserir novo usuário
-            $sql = "INSERT INTO pontos (funcionario_id, data, hora_entrada) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iss", $funcionario_id, $hoje_entrar, $horario);
-
-            if (!$stmt->execute()) {
-
-                echo "Erro: " . $sql . "<br>" . $conn->error;
-
-            }
-
-        }
-
-        header("Location: inicio.php?id=" . $funcionario_cpf);
+        header("Location: foto.php?id=" . $funcionario_cpf . "&id2=" . $funcionario_id . "&atual=entrando");
         exit();
 
     }
 
     if(isset($_POST['sair'])){
 
+        header("Location: foto.php?id=" . $funcionario_cpf . "&id2=" . $funcionario_id . "&atual=saindo");
+        exit();
+
         //echo "SAIUUUUUUUU";
-
-        $sql_verifica = "SELECT * FROM pontos WHERE funcionario_id = ? AND data = ? AND hora_saida IS NULL";
-        $stmt = $conn->prepare($sql_verifica);
-        $stmt->bind_param("is", $funcionario_id, $hoje_TOTAL);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        //echo $result->num_rows;
-
-        if ($result->num_rows != 0) {
-
-        $horario = date('H:i');
-        $hoje = date('Y-m-d');
-
-        $sql = "UPDATE pontos SET hora_saida = ? WHERE funcionario_id = ? AND data = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sis", $horario, $funcionario_id, $hoje);
-        
-        if (!$stmt->execute()) {
-
-            echo "Erro: " . $sql . "<br>" . $conn->error;
-
-        }
-        else{
-            $trabalhando = "fim";
-        }
-
-        $stmt->close();
-        $conn->close();
-
-    }
-
-    else{
-        $trabalhando = "fim";
-        $stmt->close();
-        $conn->close();
-    }
-
 }
 
 }else {
@@ -197,11 +127,11 @@ if (isset($_GET['id'])) {
 
 ?>
                         <?php if ($trabalhando == 'inicio'): ?>
-                        <input class="entrar" name="entrar" type="submit" value="Entrar"/>
+                        <input class="entrar" name="entrar" type="submit" value="Iniciar expediente"/>
                         <?php endif; ?>
 
                         <?php if ($trabalhando == 'trabalhando'): ?>
-                        <input class="sair" name="sair" type="submit" value="Sair" />
+                        <input class="sair" name="sair" type="submit" value="Finalizar expediente" />
                         <?php endif; ?>
 
                         <?php if ($trabalhando == 'fim'): ?>
