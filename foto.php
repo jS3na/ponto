@@ -109,7 +109,7 @@
             <div class="wrap animated fadeIn" id="principal">
                 <img id="logogts" src="img/logo_gts.png"/>
                 <video id="video" width="325" height="430" autoplay></video>
-                <input type="submit" id="capture" value="Capturar Foto">
+                <input type="submit" id="capture" value="Capturar Foto" onclick="return getLocation();">
                 <canvas id="canvas" width="325" height="490" style="display:none;"></canvas>
                 <form id="photoForm" method="post" enctype="multipart/form-data" action="foto.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&id2=<?php echo htmlspecialchars($_GET['id2']); ?>&atual=<?php echo htmlspecialchars($_GET['atual']); ?>">
                     <input type="hidden" name="photo" id="photo">
@@ -125,6 +125,8 @@
     </div>
 
     <script>
+
+        
         // Acessa a câmera
         navigator.mediaDevices.getUserMedia({ video: true })
         .then(function(stream) {
@@ -165,7 +167,7 @@
 
             console.log(atual);
 
-            document.getElementById("location").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+            //document.getElementById("location").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
 
             // Preenche os campos hidden no formulário
             document.getElementById("latitude").value = latitude;
@@ -183,6 +185,7 @@
             switch(error.code) {
                 case error.PERMISSION_DENIED:
                     document.getElementById("location").innerHTML = "Usuário negou a solicitação de Geolocalização.";
+                    window.close();
                     break;
                 case error.POSITION_UNAVAILABLE:
                     document.getElementById("location").innerHTML = "As informações de localização não estão disponíveis.";

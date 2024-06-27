@@ -129,7 +129,7 @@ if(isset($_POST['registrar'])){
                         <input name="password" type="password" placeholder="Senha *" />
                     </label>
 
-                    <p id="semConta">Já possui conta? <a href="http://192.168.3.4/ponto/login.php" id="registrar">Conecte-se</a>!</p>
+                    <p id="semConta">Já possui conta? <a href="https://10.10.86.80/ponto/login.php" id="registrar">Conecte-se</a>!</p>
 
                     <input name="registrar" id="conectar" type="submit" value="Registrar"/>
                 </form>

@@ -78,7 +78,7 @@
                         <input name="password" type="password" placeholder="Senha *" />
                     </label>
 
-                    <p id="semConta">Não está registrado? <a href="http://192.168.3.4/ponto/registro.php" id="logar">Registre-se</a>!</p>
+                    <p id="semConta">Não está registrado? <a href="https://10.10.86.80/ponto/registro.php" id="logar">Registre-se</a>!</p>
 
                     <input name="logar" id="conectar" type="submit" value="Logar"/>
                 </form>
