@@ -96,6 +96,18 @@ if(isset($_POST['registrar'])){
             <p class="infort" >CPF inválido</p>';
     }
 
+    elseif(!preg_match('/[!@#$%¨&*()_\-+={[}\]^~:;\/?\\|]/', $senha) || strlen($senha) < 8){
+        echo '<style>
+            .infort {
+                color: red;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+        </style>
+        <p class="infort">A senha deve ter ao menos 8 caracteres e 1 caractere especial</p>';
+    }
+    
+
     else{
 
         // Preparar e executar a consulta SQL usando prepared statements
@@ -177,8 +189,6 @@ if(isset($_POST['registrar'])){
             </div>
         </div>
     </div>
-
-    <script src="/md5.js"></script>
 
 </body>
 

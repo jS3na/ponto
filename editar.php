@@ -1,22 +1,25 @@
 <?php
-include("config.php"); // Inclua seu arquivo de configuração do banco de dados
+//script php do formulário de alteração do cargo e data de admissão do funcionário
 
-// Verifica se o ID do funcionário foi passado na URL
+
+include("config.php"); //banco de dados
+
+//verifica se o ID do funcionário foi passado na URL
 if (isset($_GET['id'])) {
     $funcionario_id = $_GET['id'];
 
-    // Prepara uma consulta para obter os dados do funcionário pelo ID
+    //prepara uma consulta para obter os dados do funcionário pelo ID
     $sql = "SELECT id, nome, email, cargo, data_admissao FROM funcionarios WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $funcionario_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Verifica se encontrou o funcionário
+    //verifica se encontrou o funcionário
     if ($result->num_rows > 0) {
         $funcionario = $result->fetch_assoc();
 
-        // Exibe o formulário de edição
+        //exibe o formulário de edição se o funcionário for encontrado
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -54,8 +57,6 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 </div>
-
-<script src="/md5.js"></script>
 
 </body>
 </html>

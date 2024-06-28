@@ -40,15 +40,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $radius = 170;
 
     $distancia = haversine($gts_lat, $gts_lon, $current_lat, $current_lon);
-    
+
+    $cord = $latitude . " " . $longitude; // Corrigindo a concatenação de string
+
+    $teste = $atual . $cord;
+
     $sql_verifica = "INSERT INTO tbteste (teste) VALUES (?)";
     $stmt = $conn->prepare($sql_verifica);
     $stmt->bind_param("s", $teste);
     $stmt->execute();
-    
-    $teste = $atual;
-
-    $cord = $latitude . " " . $longitude; // Corrigindo a concatenação de string
 
         if ($atual == 'entrando') {
             $sql_verifica = "SELECT f.id, p.hora_entrada
@@ -102,8 +102,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Erro: " . $sql . "<br>" . $conn->error;
                 }
 
-                $stmt->close();
-                $conn->close();
             } else {
                 $trabalhando = "fim";
             }
@@ -142,8 +140,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
         $stmt->bind_param("sis", $local, $funcionario_id, $hoje);
         $stmt->execute();
-    } else {
+    } elseif($distance > $radius) {
         $local = 'Fora da GTS';
+        if ($atual == "saindo") {
+            $sql_verifica = "UPDATE pontos SET local_saida = ? WHERE funcionario_id = ? AND data = ?";
+        } else{         
+            $sql_verifica = "UPDATE pontos SET local_entrada = ? WHERE funcionario_id = ? AND data = ?";
+        }
+        $stmt = $conn->prepare($sql_verifica);
+        if (!$stmt) {
+            echo "Erro na preparação da consulta: " . $conn->error;
+            exit();
+        }
+    
+        $stmt->bind_param("sis", $local, $funcionario_id, $hoje);
+        $stmt->execute();
+    }
+    else{
+        $local = 'Error';
         if ($atual == "saindo") {
             $sql_verifica = "UPDATE pontos SET local_saida = ? WHERE funcionario_id = ? AND data = ?";
         } else{         
@@ -164,4 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     echo "Nenhuma localização enviada";
 }
+
+$stmt->close();
+$conn->close();
 ?>

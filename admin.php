@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 
+<!--Script da pagina admin que verifica se a senha digitada é de um admin-->
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="pragma" content="no-cache" />
@@ -17,67 +19,60 @@
         <div class="main">
             <div class="wrap animated fadeIn">
                 <form name="registro" method="post" action="admin.php" onsubmit="return camposPreenchidos()">
-                    <img id="logogts" src="img/logo_gts.png"/>
+                    <img id="logogts" src="img/logo_gts.png" />
 
-<?php
+                    <?php
 
-include("config.php");
+                    include("config.php"); //bd
 
-// Recebe os dados do formulário
+                    if (isset($_POST['admin'])) {
 
-if(isset($_POST['admin'])){
+                        session_start();
 
-    session_start();
+                        $senha = $_POST['password']; //recebe a senha
 
-    $senha = $_POST['password'];
+                        //verifica se tem algum admin com essa senha
+                        $sql_verifica = "SELECT * FROM funcionarios WHERE senha = ? AND admin = 1";
+                        $stmt = $conn->prepare($sql_verifica);
+                        $stmt->bind_param("s", $senha);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
 
-    // Preparar e executar a consulta SQL usando prepared statements
-    $sql_verifica = "SELECT * FROM funcionarios WHERE senha = ? AND admin = 1";
-    $stmt = $conn->prepare($sql_verifica);
-    $stmt->bind_param("s", $senha);
-    $stmt->execute();
-    $result = $stmt->get_result();
+                        //se nao tiver admin com essa senha
+                        if ($result->num_rows == 0) {
 
-    // Verificar se o usuário já existe
-    if ($result->num_rows == 0) {
-
-        echo'<style>.infort {
+                            echo '<style>.infort {
             color: red;
             text-align: center;
             margin-bottom: 30px
             }</style>
         
             <p class="infort" >Você não tem permissão</p>';
+                        } else {
+                            //se tiver admin com essa senha, inicia a sessão e redireciona para a pagina de funcionarios
 
-    }
+                            $_SESSION['admin'] = true;
 
-    else{
+                            header("Location: funcionarios.php");
 
-        $_SESSION['admin'] = true;
-
-        header("Location: funcionarios.php");
-
-        $stmt->close();
-        $conn->close();
-        
-    }
-}
-?>
+                            $stmt->close();
+                            $conn->close();
+                        }
+                    }
+                    ?>
 
                     <label>
                         <img class="ico" src="img/password.svg" alt="#" />
                         <input id="password" name="password" type="password" placeholder="Senha *" />
                     </label>
 
-                    <input name="admin" id="conectar" type="submit" value="Conectar"/>
+                    <input name="admin" id="conectar" type="submit" value="Conectar" />
                 </form>
                 <p class="info bt">GTS Net</p>
 
             </div>
         </div>
     </div>
-
-    <script src="/md5.js"></script>
 
 </body>
 

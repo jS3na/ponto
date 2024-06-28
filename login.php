@@ -61,6 +61,9 @@
                                 $_SESSION['logado'] = true;
                                 echo $_SESSION['logado'];
 
+                                $stmt->close();
+                                $conn->close();
+
                                 header("Location: inicio.php?id=" . $cpf);
                                 exit();
                             }
@@ -87,8 +90,6 @@
             </div>
         </div>
     </div>
-
-    <script src="/md5.js"></script>
 
 </body>
 

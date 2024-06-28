@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 <video id="video" width="325" height="430" muted autoplay playsinline></video>
-                <input type="submit" id="capture" value="Capturar Foto" onclick="return getLocation();">
+                <input type="submit" id="capture" value="Capturar Foto" onclick="return getLocation2();">
                 <p id="perm_cam"></p>
                 <canvas id="canvas" id="photo" width="325" height="490" style="display:none;"></canvas>
                 <form id="photoForm" method="post" enctype="multipart/form-data" action="foto.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&id2=<?php echo htmlspecialchars($_GET['id2']); ?>&atual=<?php echo htmlspecialchars($_GET['atual']); ?>">
@@ -79,6 +79,8 @@
     </div>
 
     <script>
+
+        var quantLoc = 0;
 
         exibirOverlay("Você deve permitir o acesso à câmera e geolocalização para prosseguir.");
         var permissao = true;
@@ -128,8 +130,16 @@
         });
 
         function getLocation() {
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition, showError);
+            }
+        }
+
+        function getLocation2() {
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition();
             }
         }
 
@@ -149,12 +159,11 @@
             document.getElementById("longitude").value = longitude;
 
             // Enviar a localização para o servidor PHP
-
                 var xhttp = new XMLHttpRequest();
-                xhttp.open("POST", "save_location.php", true);
+                xhttp.open("POST", "inserir_ponto.php", true);
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhttp.send("latitude=" + latitude + "&longitude=" + longitude + "&funcionario_id=" + funcionario_id + "&atual=" + atual + "&funcionario_cpf=" + funcionario_cpf);
-                aa = 0;
+                quantLoc = 0;
 
         }
 
