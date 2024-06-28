@@ -39,32 +39,79 @@
         // Salva a imagem no servidor
         file_put_contents($filePath, $data);
 
+        if ($atual == 'entrando') {
+            $sql_verifica = "SELECT f.id, p.hora_entrada
+                             FROM funcionarios f 
+                             LEFT JOIN pontos p ON f.id = p.funcionario_id 
+                             WHERE f.cpf = ? AND data = ?";
+
+            $stmt = $conn->prepare($sql_verifica);
+            if (!$stmt) {
+                echo "Erro na preparação da consulta: " . $conn->error;
+                exit();
+            }
+            $stmt->bind_param("ss", $funcionario_cpf, $hoje_TOTAL);
+            $stmt->execute();
+            $result3 = $stmt->get_result();
+            $row3 = $result3->fetch_assoc();
+
+            if (is_null($row3)) {
+                $trabalhando = "trabalhando";
+                $hoje_entrar = date('Y-m-d');
+                $horario = date('H:i');
+
+                // Inserir novo usuário
+                $sql = "INSERT INTO pontos (funcionario_id, data, hora_entrada) VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("iss", $funcionario_id, $hoje_entrar, $horario);
+
+                if (!$stmt->execute()) {
+                    echo "Erro: " . $sql . "<br>" . $conn->error;
+                }
+            }
+        } elseif ($atual == 'saindo') {
+            $sql_verifica = "SELECT * FROM pontos WHERE funcionario_id = ? AND data = ? AND hora_saida IS NULL";
+            $stmt = $conn->prepare($sql_verifica);
+            $stmt->bind_param("is", $funcionario_id, $hoje_TOTAL);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows != 0) {
+                $horario = date('H:i');
+                $hoje = date('Y-m-d');
+
+                $sql = "UPDATE pontos SET hora_saida = ? WHERE funcionario_id = ? AND data = ?";
+
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sis", $horario, $funcionario_id, $hoje);
+
+                if (!$stmt->execute()) {
+                    echo "Erro: " . $sql . "<br>" . $conn->error;
+                }
+
+                $stmt->close();
+                $conn->close();
+            } else {
+                $trabalhando = "fim";
+                $stmt->close();
+                $conn->close();
+            }
+        }
+
         header("Location: inicio.php?id=" . $funcionario_cpf);
         exit();
-
     } else {
         echo "Nenhuma foto enviada.";
     }
-
-
     ?>
 
     <div class="ie-fixMinHeight">
         <div class="main">
             <div class="wrap animated fadeIn" id="principal">
                 <img id="logogts" src="img/logo_gts.png"/>
-                <div id="overlay" class="overlay">
-                    <div class="boxtxt">
-                    <div id="mensagem">Você deve permitir o acesso à câmera e geolocalização para prosseguir.</div>
-                    <br>
-                    <button onclick="permitirAcesso()">OK</button>
-                    <br>
-                    </div>
-                </div>
-                <video id="video" width="325" height="430" muted autoplay playsinline></video>
+                <video id="video" width="325" height="430" autoplay></video>
                 <input type="submit" id="capture" value="Capturar Foto" onclick="return getLocation();">
-                <p id="perm_cam"></p>
-                <canvas id="canvas" id="photo" width="325" height="490" style="display:none;"></canvas>
+                <canvas id="canvas" width="325" height="490" style="display:none;"></canvas>
                 <form id="photoForm" method="post" enctype="multipart/form-data" action="foto.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&id2=<?php echo htmlspecialchars($_GET['id2']); ?>&atual=<?php echo htmlspecialchars($_GET['atual']); ?>">
                     <input type="hidden" name="photo" id="photo">
                     <input type="hidden" name="latitude" id="latitude">
@@ -80,31 +127,11 @@
 
     <script>
 
-        exibirOverlay("Você deve permitir o acesso à câmera e geolocalização para prosseguir.");
-        var permissao = true;
-
-        function exibirOverlay(mensagem) {
-                var overlay = document.getElementById('overlay');
-                var mensagemElemento = document.getElementById('mensagem');
-                mensagemElemento.textContent = mensagem;
-                overlay.style.display = 'block';
-            }
-
-        function permitirAcesso() {
-            document.getElementById('overlay').style.display = 'none';
-            permCam();
-        }
-
         // Acessa a câmera
-        function permCam() {
-        navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+        navigator.mediaDevices.getUserMedia({ video: true })
         .then(function(stream) {
             document.getElementById('video').srcObject = stream;
-        })
-        .catch(function(error) {
-        document.getElementById("perm_cam").innerHTML = "Você deve aceitar o acesso a câmera para prosseguir com o ponto.";
-        permissao = false;
-    });}
+        });
 
         // Captura a foto
         document.getElementById('capture').addEventListener('click', function() {
@@ -116,20 +143,19 @@
             document.getElementById('photo').value = dataUrl;
 
             // Mostra a pré-visualização da foto
-            if (permissao){
             var photoPreview = document.getElementById('photoPreview');
             photoPreview.src = dataUrl;
             photoPreview.style.display = 'block';
 
             // Mostra o botão de enviar
-
-                document.getElementById('sendPhotoButton').style.display = 'inline';
-            }
+            document.getElementById('sendPhotoButton').style.display = 'inline';
         });
 
         function getLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location").innerHTML = "Geolocalização não é suportada por este navegador.";
             }
         }
 
@@ -137,7 +163,6 @@
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             var funcionario_id = <?php echo json_encode($_GET['id2']); ?>;
-            var funcionario_cpf = <?php echo json_encode($_GET['id']); ?>;
             var atual = <?php echo json_encode($_GET['atual']); ?>;
 
             console.log(atual);
@@ -149,22 +174,18 @@
             document.getElementById("longitude").value = longitude;
 
             // Enviar a localização para o servidor PHP
-
-                var xhttp = new XMLHttpRequest();
-                xhttp.open("POST", "save_location.php", true);
-                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xhttp.send("latitude=" + latitude + "&longitude=" + longitude + "&funcionario_id=" + funcionario_id + "&atual=" + atual + "&funcionario_cpf=" + funcionario_cpf);
-                aa = 0;
-
+            setTimeout(3000);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST", "save_location.php", true);
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send("latitude=" + latitude + "&longitude=" + longitude + "&funcionario_id=" + funcionario_id + "&atual=" + atual);
         }
 
         function showError(error) {
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    document.getElementById("perm_cam").innerHTML = "Você deve aceitar o acesso a localização para prosseguir com o ponto.";
-                    document.getElementById('sendPhotoButton').style.display = 'none';
-                    document.getElementById('photoPreview').style.display = 'none';
-                    permissao = false;
+                    document.getElementById("location").innerHTML = "Usuário negou a solicitação de Geolocalização.";
+                    window.close();
                     break;
                 case error.POSITION_UNAVAILABLE:
                     document.getElementById("location").innerHTML = "As informações de localização não estão disponíveis.";

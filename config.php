@@ -1,9 +1,9 @@
 <?php
 
 //conexão com o banco de dados
-$host = '10.10.86.80';
+$host = 'localhost';
 $login = 'root';
-$senha_bd = 'radrootgts87';
+$senha_bd = 'admin';
 $banco = 'gts';
 
 $conn = new mysqli($host, $login, $senha_bd, $banco);

@@ -312,10 +312,7 @@ input[name=editar]{
 }
 
 .menu{
-    margin: 30
-    
-    
-    px
+    margin: 30px;
 }
 
 table {
@@ -328,6 +325,11 @@ td {
 
 td[type=submit] {
     background-color: #ff73007c;
+}
+
+.tdFoto{
+    width: 10%;
+    height: 10%;
 }
 
 th,
@@ -353,20 +355,71 @@ input[type=submit]:hover {
     background: #be5c00
 }
 
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* fundo semi-transparente */
+    color: rgb(0, 0, 0);
+    font-size: 24px;
+    text-align: center;
+    padding-top: 50%;
+    z-index: 9999; /* garante que fique acima do restante da página */
+}
+
+.overlay button {
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    background-color: #ec821f; /* cor de fundo verde */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.overlay div[id='mensagem']{
+    padding-top: 50px;
+}
+
+.boxtxt{
+    border-radius: 14px;;
+    position: absolute;
+    left: 10%;
+    align-self: center;
+    height: 20%;
+    width: 80%;
+    background-color: white;
+}
+
 #video, #photoPreview{
 
     border: 1px solid #000000;
     border-radius: 10px;
-
+    background-color: white;
     align-self: center;
-    background-color: green;
     transform: rotateY(180deg);
     -webkit-transform:rotateY(180deg); /* Safari and Chrome */
     -moz-transform:rotateY(180deg); /* Firefox */
     -ms-transform:rotateY(180deg); /* IE 9 */
     -o-transform:rotateY(180deg); /* Opera */
 
+
     margin: 10px;
+}
+
+.fotos{
+    display: flex;
+    flex-direction: row;
+
+
+}
+
+.fotoPessoa{
+    width: 60%;
+    height: 30%;
 }
 
 .lite {

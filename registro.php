@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="utf-8">
@@ -20,6 +20,35 @@
                     <img id="logogts" src="img/logo_gts.png"/>
 
 <?php
+
+function validaCPF($cpf)
+{
+
+    // Extrai somente os números
+    $cpf = preg_replace('/[^0-9]/is', '', $cpf);
+
+    // Verifica se foi informado todos os digitos corretamente
+    if (strlen($cpf) != 11) {
+        return false;
+    }
+
+    // Verifica se foi informada uma sequência de digitos repetidos. Ex: 111.111.111-11
+    if (preg_match('/(\d)\1{10}/', $cpf)) {
+        return false;
+    }
+
+    // Faz o calculo para validar o CPF
+    for ($t = 9; $t < 11; $t++) {
+        for ($d = 0, $c = 0; $c < $t; $c++) {
+            $d += $cpf[$c] * (($t + 1) - $c);
+        }
+        $d = ((10 * $d) % 11) % 10;
+        if ($cpf[$c] != $d) {
+            return false;
+        }
+    }
+    return true;
+}
 
 include("config.php");
 
@@ -48,6 +77,16 @@ if(isset($_POST['registrar'])){
 
     elseif(strlen($cpf) != 11){
 
+        echo'<style>.infort {
+            color: red;
+            text-align: center;
+            margin-bottom: 30px
+            }</style>
+        
+            <p class="infort" >CPF inválido</p>';
+    }
+
+    elseif(!validaCPF($cpf)){
         echo'<style>.infort {
             color: red;
             text-align: center;

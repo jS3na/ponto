@@ -1,50 +1,165 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Geolocalização com PHP</title>
-</head>
-<body>
-    <h1>Obter Localização Atual</h1>
-    <button onclick="getLocation()">Obter Localização</button>
-    <p id="location"></p>
+<?php
 
-    <script>
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+include('config.php');
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $hoje = date('Y-m-d');
+    echo $hoje; // Para depuração, pode ser removido posteriormente
+
+    $latitude = $_POST['latitude'];
+    $longitude = $_POST['longitude'];
+    $funcionario_id = (int)$_POST['funcionario_id'];
+    $funcionario_cpf = (int)$_POST['funcionario_cpf'];
+    $atual = $_POST['atual'];
+
+    function haversine($lat1, $lon1, $lat2, $lon2) {
+        $R = 6371000; // Raio da Terra em metros
+        $phi1 = deg2rad($lat1);
+        $phi2 = deg2rad($lat2);
+        $delta_phi = deg2rad($lat2 - $lat1);
+        $delta_lambda = deg2rad($lon2 - $lon1);
+    
+        $a = sin($delta_phi / 2) * sin($delta_phi / 2) +
+             cos($phi1) * cos($phi2) *
+             sin($delta_lambda / 2) * sin($delta_lambda / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    
+        $distance = $R * $c;
+        return $distance;
+    }
+
+    $gts_lat = -5.042492;
+    $gts_lon = -42.7475373;
+
+    $current_lat = (float)$latitude;
+    $current_lon = (float)$longitude;
+
+    $radius = 170;
+
+    $distancia = haversine($gts_lat, $gts_lon, $current_lat, $current_lon);
+    
+    $sql_verifica = "INSERT INTO tbteste (teste) VALUES (?)";
+    $stmt = $conn->prepare($sql_verifica);
+    $stmt->bind_param("s", $teste);
+    $stmt->execute();
+    
+    $teste = $atual;
+
+    $cord = $latitude . " " . $longitude; // Corrigindo a concatenação de string
+
+        if ($atual == 'entrando') {
+            $sql_verifica = "SELECT f.id, p.hora_entrada
+                             FROM funcionarios f 
+                             LEFT JOIN pontos p ON f.id = p.funcionario_id 
+                             WHERE f.cpf = ? AND data = ?";
+
+            $stmt = $conn->prepare($sql_verifica);
+            if (!$stmt) {
+                echo "Erro na preparação da consulta: " . $conn->error;
+                exit();
+            }
+            $stmt->bind_param("is", $funcionario_cpf, $hoje);
+            $stmt->execute();
+            $result3 = $stmt->get_result();
+            $row3 = $result3->fetch_assoc();
+
+            if (is_null($row3)) {
+
+                $trabalhando = "trabalhando";
+                $hoje_entrar = date('Y-m-d');
+                $horario = date('H:i');
+
+                // Inserir novo usuário
+                $sql = "INSERT INTO pontos (funcionario_id, data, hora_entrada) VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("iss", $funcionario_id, $hoje_entrar, $horario);
+
+                if (!$stmt->execute()) {
+                    echo "Erro: " . $sql . "<br>" . $conn->error;
+                }
+
+            }
+        } elseif ($atual == 'saindo') {
+            
+            $sql_verifica = "SELECT * FROM pontos WHERE funcionario_id = ? AND data = ? AND hora_saida IS NULL";
+            $stmt = $conn->prepare($sql_verifica);
+            $stmt->bind_param("is", $funcionario_id, $hoje);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows != 0) {
+                $horario = date('H:i');
+                $hoje = date('Y-m-d');
+
+                $sql = "UPDATE pontos SET hora_saida = ? WHERE funcionario_id = ? AND data = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sis", $horario, $funcionario_id, $hoje);
+
+                if (!$stmt->execute()) {
+                    echo "Erro: " . $sql . "<br>" . $conn->error;
+                }
+
+                $stmt->close();
+                $conn->close();
             } else {
-                document.getElementById("location").innerHTML = "Geolocalização não é suportada por este navegador.";
+                $trabalhando = "fim";
             }
         }
 
-        function showPosition(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            document.getElementById("location").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+    #$sql_verifica = "INSERT INTO  tbteste (teste) VALUES (?)";
 
-            // Enviar a localização para o servidor PHP
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("POST", "save_location.php", true);
-            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhttp.send("latitude=" + latitude + "&longitude=" + longitude);
-        }
+    if ($atual == "saindo") {
+        $sql_verifica = "UPDATE pontos SET cord_saida = ? WHERE funcionario_id = ? AND data = ?";
+    } else{
+        $sql_verifica = "UPDATE pontos SET cord_entrada = ? WHERE funcionario_id = ? AND data = ?";
+    }
 
-        function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    document.getElementById("location").innerHTML = "Usuário negou a solicitação de Geolocalização.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    document.getElementById("location").innerHTML = "As informações de localização não estão disponíveis.";
-                    break;
-                case error.TIMEOUT:
-                    document.getElementById("location").innerHTML = "A solicitação para obter a localização do usuário expirou.";
-                    break;
-                case error.UNKNOWN_ERROR:
-                    document.getElementById("location").innerHTML = "Ocorreu um erro desconhecido.";
-                    break;
-            }
+    $stmt = $conn->prepare($sql_verifica);
+    if (!$stmt) {
+        echo "Erro na preparação da consulta: " . $conn->error;
+        exit();
+    }
+
+    $stmt->bind_param("sis", $cord, $funcionario_id, $hoje);
+    $stmt->execute();
+
+
+    if ($distance <= $radius) {
+        $local = 'gts';
+        if ($atual == "saindo") {
+            $sql_verifica = "UPDATE pontos SET local_saida = ? WHERE funcionario_id = ? AND data = ?";
+        } else{         
+            $sql_verifica = "UPDATE pontos SET local_entrada = ? WHERE funcionario_id = ? AND data = ?";
         }
-    </script>
-</body>
-</html>
+        $stmt = $conn->prepare($sql_verifica);
+        if (!$stmt) {
+            echo "Erro na preparação da consulta: " . $conn->error;
+            exit();
+        }
+    
+        $stmt->bind_param("sis", $local, $funcionario_id, $hoje);
+        $stmt->execute();
+    } else {
+        $local = 'fora da gts';
+        if ($atual == "saindo") {
+            $sql_verifica = "UPDATE pontos SET local_saida = ? WHERE funcionario_id = ? AND data = ?";
+        } else{         
+            $sql_verifica = "UPDATE pontos SET local_entrada = ? WHERE funcionario_id = ? AND data = ?";
+        }
+        $stmt = $conn->prepare($sql_verifica);
+        if (!$stmt) {
+            echo "Erro na preparação da consulta: " . $conn->error;
+            exit();
+        }
+    
+        $stmt->bind_param("sis", $local, $funcionario_id, $hoje);
+        $stmt->execute();
+    }
+
+    // Não é necessário obter resultados se é um UPDATE
+    echo "Latitude: $latitude, Longitude: $longitude";
+} else {
+    echo "Nenhuma localização enviada";
+}
+?>
