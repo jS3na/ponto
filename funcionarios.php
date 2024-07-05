@@ -107,14 +107,5 @@ $result = $stmt->get_result();
     </div>
 </div>
 
-<script>
-    function verFotos(btn) {
-        var fotosRow = btn.parentNode.parentNode.querySelector('.fotos');
-        if (fotosRow) {
-            fotosRow.style.display = (fotosRow.style.display === 'none' || fotosRow.style.display === '') ? 'table-row' : 'none';
-        }
-    }
-</script>
-
 </body>
 </html>

@@ -1,6 +1,4 @@
 <?php
-
-session_start();
 include("config.php"); // banco de dados
 
 // Verifica se o ID do funcionário foi passado na URL
@@ -12,6 +10,18 @@ if (isset($_GET['id'])) {
         $_SESSION['mes'] = $_POST['mes'];
     }
 
+    $sql_horas = "SELECT 
+    funcionario_id, 
+    SEC_TO_TIME(SUM(TIME_TO_SEC(TIMEDIFF(hora_saida, hora_entrada)) - TIME_TO_SEC(TIMEDIFF(almoco_saida, almoco_entrada)))) as jornada_liquida
+FROM 
+    pontos WHERE funcionario_id = ?
+GROUP BY 
+    funcionario_id;";
+    $stmt_horas = $conn->prepare($sql_horas);
+    $stmt_horas->bind_param("i", $funcionario_id);
+    $stmt_horas->execute();
+    $result_horas = $stmt_horas->get_result();
+
     $sql = "SELECT id, nome, cpf, email, turno, cargo, data_admissao FROM funcionarios WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $funcionario_id);
@@ -21,6 +31,7 @@ if (isset($_GET['id'])) {
     // Verifica se encontrou o funcionário
     if ($result->num_rows > 0) {
         $funcionario = $result->fetch_assoc();
+        $horas_total = $result_horas->fetch_assoc();
 
         // Obtém o mês e ano do filtro
         $mes = isset($_SESSION['mes']) ? $_SESSION['mes'] : date('Y-m');
@@ -37,8 +48,8 @@ if (isset($_GET['id'])) {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        // Variável para armazenar o total de horas trabalhadas
-        $total_horas = 0;
+        // Variável para armazenar o total de segundos trabalhados
+        $total_segundos = 0;
     }
 ?>
 
@@ -71,11 +82,7 @@ if (isset($_GET['id'])) {
                             <p><b>Nome:</b> <?php echo $funcionario['nome']; ?></p>
                             <p><b>E-mail:</b> <?php echo $funcionario['email']; ?></p>
                             <p><b>Cargo:</b> <?php echo $funcionario['cargo']; ?></p>
-                            <?php if ($funcionario['turno'] == 'dia_todo'): ?>
-                                <p><b>Turno:</b> dia todo</p>
-                            <?php else:?>
-                                <p><b>Cargo:</b> <?php echo $funcionario['turno']; ?></p>
-                            <?php endif; ?>
+                            <p><b>Turno:</b> <?php echo $funcionario['turno']; ?></p>
                             <p><b>Data de admissão:</b> <?php echo date('d/m/Y', strtotime($funcionario['data_admissao'])); ?></p>
                         </div>
                     </div>
@@ -86,44 +93,22 @@ if (isset($_GET['id'])) {
                     <tr>
                         <th>DATA</th>
                         <th>Hora de entrada</th>
-                        <th>Foto</th>
                         <th>Entrada ao almoço</th>
                         <th>Saída do almoço</th>
                         <th>Hora de saída</th>
-                        <th>Foto</th>
                     </tr>
                     <?php while ($row = $result->fetch_assoc()): ?>
-                        <?php
-                        $ativoClass = ($row['status'] == 'ativo') ? '' : 'desativado';
-                        $hora_entrada = new DateTime($row['hora_entrada']);
-                        $hora_saida = new DateTime($row['hora_saida']);
-                        $almoco_entrada = new DateTime($row['almoco_entrada']);
-                        $almoco_saida = new DateTime($row['almoco_saida']);
-
-                        // Calcula as horas trabalhadas no dia
-                        $intervalo_trabalho = $hora_entrada->diff($hora_saida);
-                        $intervalo_almoco = $almoco_entrada->diff($almoco_saida);
-                        $horas_trabalhadas = $intervalo_trabalho->h + ($intervalo_trabalho->i / 60) - ($intervalo_almoco->h + ($intervalo_almoco->i / 60));
-                        $total_horas += $horas_trabalhadas;
-                        ?>
                         <tr class="<?php echo $ativoClass; ?>">
                             <td class="txtTabela"><?php echo date('d/m/Y', strtotime($row['data'])); ?></td>
                             <td class="txtTabela"><?php echo $row['hora_entrada']; ?></td>
-                            <td class="tdFoto">
-                                <img class="fotoPessoa" src="uploads/photo_<?php echo $funcionario['cpf'];?>_<?php echo $_SESSION['hoje'];?>_entrando.png" alt="Foto de <?php echo $funcionario['nome'];?> ao entrar">
-                            </td>
                             <td class="txtTabela"><?php echo $row['almoco_entrada']; ?></td>
                             <td class="txtTabela"><?php echo $row['almoco_saida']; ?></td>
                             <td class="txtTabela"><?php echo $row['hora_saida']; ?></td>
-                            <td class="tdFoto">
-                                <img class="fotoPessoa" src="uploads/photo_<?php echo $funcionario['cpf'];?>_<?php echo $_SESSION['hoje'];?>_saindo.png" alt="Foto de <?php echo $funcionario['nome'];?> ao sair">
-                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </table>
                 <!-- Exibe o total de horas trabalhadas -->
-                <br>
-                <p id="txtHoras">Total de horas trabalhadas no mês: <?php echo number_format($total_horas, 2); ?> horas</p>
+                <p>Total de horas trabalhadas no mês: <?php echo $horas_total['jornada_liquida']; ?></p>
                 <p class="info bt">GTS Net</p>
             </div>
         </div>

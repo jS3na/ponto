@@ -19,6 +19,8 @@
 
 <?php
 
+session_start();
+
 // Verificação de administração
 if (!isset($_SESSION['admin']) || $_SESSION['admin'] != true) {
     header("Location: index.php");
@@ -163,10 +165,11 @@ if(isset($_POST['registrar'])){
                         <input name="cpf" type="cpf" placeholder="CPF *" onkeypress="return apenasNum(event)" />
                     </label>
 
-                    <label>
-                        <img class="ico" src="img/cargo.svg" alt="#" />
-                        <input name="cargo" type="cargo" placeholder="Cargo *"/>
-                    </label>
+                    <label for="cargo">Cargo:</label>
+                    <select id="cargo" name="cargo">
+                        <option value="Operacional">Operacional</option>
+                        <option value="Administrativo">Administrativo</option>
+                    </select>
 
                     <label for="turno">Turno:</label>
                     <select id="turno" name="turno">
@@ -177,6 +180,12 @@ if(isset($_POST['registrar'])){
 
                     <label for="data_admissao">Data de Admissão:</label>
                     <input type="date" id="data_admissao" name="data_admissao" value="<?php echo date("Y-m-d"); ?>"><br><br>
+
+                    <label for="admin">Admin:</label>
+                    <select id="admin" name="admin">
+                        <option value="0">Não</option>
+                        <option value="1">Sim</option>
+                    </select>
 
                 <input type="submit" name="registrar" value="Adicionar">
             </form>

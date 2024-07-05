@@ -46,7 +46,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Erro: " . $sql . "<br>" . $conn->error;
                 }
 
+                $sql = "INSERT INTO tbteste (teste) VALUES (?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("s", $horario);
+
+                if (!$stmt->execute()) {
+                    echo "Erro: " . $sql . "<br>" . $conn->error;
+                }
+
             }
+
         } elseif ($atual == 'saindo') {
             
             $sql_verifica = "SELECT * FROM pontos WHERE funcionario_id = ? AND data = ? AND hora_saida IS NULL";
@@ -56,6 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = $stmt->get_result();
 
             if ($result->num_rows != 0) {
+                $agora = new DateTime();
                 $horario = date('H:i:s');
                 $hoje = date('Y-m-d');
 
@@ -77,3 +87,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo "Nenhuma localização enviada";
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+</html>

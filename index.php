@@ -1,8 +1,10 @@
 <?php
 
+session_start();
+
 if (!$_SESSION['logado']) {
     //echo 'ssassas';
-    header("Location: login.php");
+    header("Location: https://10.10.86.80/login.php");
     exit();
 }
 
@@ -32,8 +34,6 @@ if (!$_SESSION['logado']) {
 <?php
 
 date_default_timezone_set('America/Sao_Paulo');
-
-session_start();
 
 $trabalhando = '';
 $funcionario_id = 'aaaa';
