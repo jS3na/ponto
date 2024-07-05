@@ -21,7 +21,7 @@
 
 // Verificação de administração
 if (!isset($_SESSION['admin']) || $_SESSION['admin'] != true) {
-    header("Location: inicio.php");
+    header("Location: index.php");
     exit();
 }
 //script php do formulário de alteração do cargo e data de admissão do funcionário

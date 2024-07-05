@@ -29,7 +29,7 @@ include("config.php");
 
 // Verificação de administração
 if (!isset($_SESSION['admin']) || $_SESSION['admin'] != true) {
-    header("Location: inicio.php");
+    header("Location: index.php");
     exit();
 }
 

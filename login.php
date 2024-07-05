@@ -60,7 +60,7 @@
                                 $_SESSION['logado'] = true;
                                 echo $_SESSION['logado'];
 
-                                header("Location: inicio.php?id=" . $cpf);
+                                header("Location: index.php?id=" . $cpf);
                                 exit();
                             }
                         }

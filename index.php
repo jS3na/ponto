@@ -26,7 +26,7 @@ if (!$_SESSION['logado']) {
     <div class="ie-fixMinHeight">
         <div class="main">
             <div class="wrap animated fadeIn" id="principal">
-                <form name="login" method="post" action="inicio.php?id=<?php echo htmlspecialchars($_GET['id']); ?>">
+                <form name="login" method="post" action="index.php?id=<?php echo htmlspecialchars($_GET['id']); ?>">
                     <img id="logogts" src="img/logo_gts.png"/>
 
 <?php
@@ -132,7 +132,7 @@ if (isset($_GET['id'])) {
         $stmt->bind_param("sss", $hora_almoco, $funcionario_id, $dia_almoco);
         $stmt->execute();
 
-        header("Location: inicio.php?id=" . $funcionario_cpf);
+        header("Location: index.php?id=" . $funcionario_cpf);
         exit();
 
     }
@@ -147,7 +147,7 @@ if (isset($_GET['id'])) {
         $stmt->bind_param("sss", $hora_almoco, $funcionario_id, $dia_almoco);
         $stmt->execute();
 
-        header("Location: inicio.php?id=" . $funcionario_cpf);
+        header("Location: index.php?id=" . $funcionario_cpf);
         exit();
 
     }
