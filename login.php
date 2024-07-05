@@ -30,9 +30,8 @@
 
                         $cpf = $_POST['cpf'];
                         $cpf = str_replace(array('(', ')', '-', '.'), '', $cpf);
-                        $senha = $_POST['password'];
 
-                        if (empty($cpf) || empty($senha)) {
+                        if (empty($cpf)) {
                             // Se qualquer uma das variáveis estiver vazia, faça algo
                             echo '<style>.infort {
                                 color: red;
@@ -42,9 +41,9 @@
                                 <p class="infort">Preencha todos os campos obrigatórios</p>';
                         } else {
                             // Preparar e executar a consulta SQL usando prepared statements
-                            $sql_verifica = "SELECT * FROM funcionarios WHERE cpf = ? AND senha = ? AND status = 'ativo'";
+                            $sql_verifica = "SELECT * FROM funcionarios WHERE cpf = ? AND status = 'ativo'";
                             $stmt = $conn->prepare($sql_verifica);
-                            $stmt->bind_param("ss", $cpf, $senha);
+                            $stmt->bind_param("s", $cpf);
                             $stmt->execute();
                             $result = $stmt->get_result();
 
@@ -55,14 +54,11 @@
                                     text-align: center;
                                     margin-bottom: 30px
                                     }</style>
-                                    <p class="infort">CPF ou senha incorretos</p>';
+                                    <p class="infort">CPF incorreto</p>';
                             } else {
                                 $row = $result->fetch_assoc();
                                 $_SESSION['logado'] = true;
                                 echo $_SESSION['logado'];
-
-                                $stmt->close();
-                                $conn->close();
 
                                 header("Location: inicio.php?id=" . $cpf);
                                 exit();
@@ -75,13 +71,6 @@
                         <img class="ico" src="img/cpf.svg" alt="#" />
                         <input name="cpf" type="text" placeholder="CPF *" onkeypress="return apenasNum(event)" />
                     </label>
-
-                    <label>
-                        <img class="ico" src="img/password.svg" alt="#" />
-                        <input name="password" type="password" placeholder="Senha *" />
-                    </label>
-
-                    <p id="semConta">Não está registrado? <a href="https://10.10.86.80/ponto/registro.php" id="logar">Registre-se</a>!</p>
 
                     <input name="logar" id="conectar" type="submit" value="Logar"/>
                 </form>

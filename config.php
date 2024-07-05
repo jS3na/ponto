@@ -1,9 +1,9 @@
 <?php
 
 //conexão com o banco de dados
-$host = 'localhost';
-$login = 'root';
-$senha_bd = 'admin';
+$host = '10.10.86.80';
+$login = "sistema_ponto";
+$senha_bd = "sistemaponto";
 $banco = 'gts';
 
 $conn = new mysqli($host, $login, $senha_bd, $banco);

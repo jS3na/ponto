@@ -9,7 +9,7 @@
     <meta http-equiv="expires" content="-1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="https://gtsnet.com.br/wp-content/uploads/sites/98/2020/08/cropped-favicon-32x32.png" sizes="32x32">
-    <title>Registro</title>
+    <title>Admin</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -29,12 +29,13 @@
 
                         session_start();
 
-                        $senha = $_POST['password']; //recebe a senha
+                        $cpf = $_POST['password']; //recebe a senha
+                        $cpf = str_replace(array('(', ')', '-', '.'), '', $cpf);
 
                         //verifica se tem algum admin com essa senha
-                        $sql_verifica = "SELECT * FROM funcionarios WHERE senha = ? AND admin = 1";
+                        $sql_verifica = "SELECT * FROM funcionarios WHERE cpf = ? AND admin = 1";
                         $stmt = $conn->prepare($sql_verifica);
-                        $stmt->bind_param("s", $senha);
+                        $stmt->bind_param("s", $cpf);
                         $stmt->execute();
                         $result = $stmt->get_result();
 
@@ -49,21 +50,19 @@
         
             <p class="infort" >Você não tem permissão</p>';
                         } else {
-                            //se tiver admin com essa senha, inicia a sessão e redireciona para a pagina de funcionarios
+                            //se tiver admin com esse cpf, inicia a sessão e redireciona para a pagina de funcionarios
 
                             $_SESSION['admin'] = true;
 
-                            header("Location: funcionarios.php");
+                            header("Location: funcionarios_dia.php");
 
-                            $stmt->close();
-                            $conn->close();
                         }
                     }
                     ?>
 
                     <label>
                         <img class="ico" src="img/password.svg" alt="#" />
-                        <input id="password" name="password" type="password" placeholder="Senha *" />
+                        <input id="password" name="password" type="password" placeholder="CPF *" />
                     </label>
 
                     <input name="admin" id="conectar" type="submit" value="Conectar" />

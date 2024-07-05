@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="pragma" content="no-cache" />
-    <meta http-equiv="expires" content="-1" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://gtsnet.com.br/wp-content/uploads/sites/98/2020/08/cropped-favicon-32x32.png" sizes="32x32">
-    <title>Registro</title>
-    <link rel="stylesheet" href="css\style.css">
+    <title>Adicionar Funcionário</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-    <div class="ie-fixMinHeight">
-        <div class="main">
-            <div class="wrap animated fadeIn" id="principal">
-                <form name="registro" method="post" action="registro.php">
-                    <img id="logogts" src="img/logo_gts.png"/>
+<div class="ie-fixMinHeight">
+    <div class="main">
+        <div class="wrap animated fadeIn" id="principal">
+            <img id="logogts" src="img/logo_gts.png" />
+
+            <form name='login' method="post" action="add_funcionario.php">
 
 <?php
+
+// Verificação de administração
+if (!isset($_SESSION['admin']) || $_SESSION['admin'] != true) {
+    header("Location: inicio.php");
+    exit();
+}
+//script php do formulário de alteração do cargo e data de admissão do funcionário
 
 function validaCPF($cpf)
 {
@@ -61,9 +66,10 @@ if(isset($_POST['registrar'])){
     $cpf = $_POST['cpf'];
     $cpf = str_replace(array('(', ')', '-', '.'), '', $cpf);
     $cargo = $_POST['cargo'];
-    $senha = $_POST['password'];
+    $turno = $_POST['turno'];
+    $data_admissao = $_POST['data_admissao'];
 
-    if (empty($username) || empty($email) || empty($cpf) || empty($senha)) {
+    if (empty($username) || empty($email) || empty($cpf) || empty($cargo) || empty($turno) || empty($data_admissao)) {
         // Se qualquer uma das variáveis estiver vazia, faça algo
         echo'<style>.infort {
             color: red;
@@ -95,17 +101,6 @@ if(isset($_POST['registrar'])){
         
             <p class="infort" >CPF inválido</p>';
     }
-
-    elseif(!preg_match('/[!@#$%¨&*()_\-+={[}\]^~:;\/?\\|]/', $senha) || strlen($senha) < 8){
-        echo '<style>
-            .infort {
-                color: red;
-                text-align: center;
-                margin-bottom: 30px;
-            }
-        </style>
-        <p class="infort">A senha deve ter ao menos 8 caracteres e 1 caractere especial</p>';
-    }
     
 
     else{
@@ -133,20 +128,18 @@ if(isset($_POST['registrar'])){
         else{
 
             // Inserir novo usuário
-            $sql = "INSERT INTO funcionarios (nome, email, cpf, cargo, senha) VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO funcionarios (nome, email, cpf, cargo, turno, data_admissao) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssss", $username, $email, $cpf, $cargo, $senha);
-
+            $stmt->bind_param("ssssss", $username, $email, $cpf, $cargo, $turno, $data_admissao);
+        
             if ($stmt->execute()) {
 
-                header("Location: http://192.168.3.4/ponto/login.php");
+                header("Location: funcionarios.php");
                 exit();
             } else {
                 echo "Erro: " . $sql . "<br>" . $conn->error;
             }
 
-            $stmt->close();
-            $conn->close();
             
         }
     }
@@ -175,21 +168,23 @@ if(isset($_POST['registrar'])){
                         <input name="cargo" type="cargo" placeholder="Cargo *"/>
                     </label>
 
-                    <label>
-                        <img class="ico" src="img/password.svg" alt="#" />
-                        <input name="password" type="password" placeholder="Senha *" />
-                    </label>
+                    <label for="turno">Turno:</label>
+                    <select id="turno" name="turno">
+                        <option value="manha">Manhã</option>
+                        <option value="tarde">Tarde</option>
+                        <option value="dia_todo">Dia todo</option>
+                    </select>
 
-                    <p id="semConta">Já possui conta? <a href="https://10.10.86.80/ponto/login.php" id="registrar">Conecte-se</a>!</p>
+                    <label for="data_admissao">Data de Admissão:</label>
+                    <input type="date" id="data_admissao" name="data_admissao" value="<?php echo date("Y-m-d"); ?>"><br><br>
 
-                    <input name="registrar" id="conectar" type="submit" value="Registrar"/>
-                </form>
-                <p class="info bt">GTS Net</p>
+                <input type="submit" name="registrar" value="Adicionar">
+            </form>
 
-            </div>
+            <p class="info bt">GTS Net</p>
         </div>
     </div>
+</div>
 
 </body>
-
 </html>

@@ -1,3 +1,13 @@
+<?php
+
+if (!$_SESSION['logado']) {
+    //echo 'ssassas';
+    header("Location: login.php");
+    exit();
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -21,13 +31,9 @@
 
 <?php
 
-session_start();
+date_default_timezone_set('America/Sao_Paulo');
 
-if (!$_SESSION['logado']) {
-    //echo 'ssassas';
-    header("Location: login.php");
-    exit();
-}
+session_start();
 
 $trabalhando = '';
 $funcionario_id = 'aaaa';
@@ -40,7 +46,7 @@ if (isset($_GET['id'])) {
 
     $funcionario_cpf = $_GET['id'];
 
-    $sql_verifica = "SELECT f.id, f.nome, f.data_admissao, p.funcionario_id, p.data, p.hora_entrada, p.hora_saida 
+    $sql_verifica = "SELECT f.id, f.nome, f.turno, f.data_admissao, p.funcionario_id, p.data, p.hora_entrada, p.hora_saida, p.almoco_entrada, p.almoco_saida
                     FROM funcionarios f 
                     LEFT JOIN pontos p ON f.id = p.funcionario_id 
                     WHERE f.cpf = ? AND data = ?";
@@ -56,6 +62,9 @@ if (isset($_GET['id'])) {
     $row = $result->fetch_assoc();
     if(!is_null($row)){
         $hora_saida = $row['hora_saida'];
+        $turno = $row['turno'];
+        $almoco_entrada = $row['almoco_entrada'];
+        $almoco_saida = $row['almoco_saida'];
     }
 
     $sql_verifica = "SELECT id, nome FROM funcionarios WHERE cpf = ?";
@@ -74,7 +83,14 @@ if (isset($_GET['id'])) {
 
     if ($result->num_rows == 0) {
         $trabalhando = "inicio";
+    }
 
+    elseif($turno == 'dia_todo' && is_null($almoco_entrada)){
+        $trabalhando = "inicio_almoco";
+    }
+
+    elseif($turno == 'dia_todo' && !is_null($almoco_entrada) && is_null($almoco_saida)){
+        $trabalhando = "almocando";
     }
 
     elseif(!isset($hora_saida)){
@@ -106,6 +122,42 @@ if (isset($_GET['id'])) {
 
     }
 
+    if(isset($_POST['inicio_almoco'])){
+
+        $hora_almoco = date('H:i:s');
+        $dia_almoco = date('Y-m-d');
+
+        $sql = "UPDATE pontos SET almoco_entrada = ? WHERE funcionario_id = ? AND data = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $hora_almoco, $funcionario_id, $dia_almoco);
+        $stmt->execute();
+
+        header("Location: inicio.php?id=" . $funcionario_cpf);
+        exit();
+
+    }
+
+    if(isset($_POST['final_almoco'])){
+
+        $hora_almoco = date('H:i:s');
+        $dia_almoco = date('Y-m-d');
+
+        $sql = "UPDATE pontos SET almoco_saida = ? WHERE funcionario_id = ? AND data = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $hora_almoco, $funcionario_id, $dia_almoco);
+        $stmt->execute();
+
+        header("Location: inicio.php?id=" . $funcionario_cpf);
+        exit();
+
+    }
+
+    if(isset($_POST['sair-conta'])){
+        session_destroy();
+        header("Location: login.php");
+        exit();
+    }
+
     if(isset($_POST['sair'])){
 
         header("Location: foto.php?id=" . $funcionario_cpf . "&id2=" . $funcionario_id . "&atual=saindo");
@@ -130,6 +182,14 @@ if (isset($_GET['id'])) {
                         <input class="entrar" name="entrar" type="submit" value="Iniciar expediente"/>
                         <?php endif; ?>
 
+                        <?php if ($trabalhando == 'inicio_almoco'): ?>
+                        <input class="inicio_almoco" name="inicio_almoco" type="submit" value="Iniciar almoço" />
+                        <?php endif; ?>
+
+                        <?php if ($trabalhando == 'almocando'): ?>
+                        <input class="final_almoco" name="final_almoco" type="submit" value="Finalizar almoço" />
+                        <?php endif; ?>
+
                         <?php if ($trabalhando == 'trabalhando'): ?>
                         <input class="sair" name="sair" type="submit" value="Finalizar expediente" />
                         <?php endif; ?>
@@ -137,6 +197,8 @@ if (isset($_GET['id'])) {
                         <?php if ($trabalhando == 'fim'): ?>
                             <p class="bemvindo">Você já trabalhou hoje</p>
                         <?php endif; ?>
+
+                        <input class="sair-conta" name="sair-conta" type="submit" value="Sair da conta" />
 
                 </form>
                 <p class="info bt">GTS Net</p>

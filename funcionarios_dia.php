@@ -25,6 +25,11 @@
 <?php
 session_start();
 
+// Atualiza $_SESSION['hoje'] com a data atual se não estiver definido
+if (!isset($_SESSION['hoje'])) {
+    $_SESSION['hoje'] = date('Y-m-d');
+}
+
 include("config.php");
 
 // Verificação de administração
@@ -33,20 +38,25 @@ if (!isset($_SESSION['admin']) || $_SESSION['admin'] != true) {
     exit();
 }
 
-if (isset($_POST['add_funcionario'])) {
-    header("Location: add_funcionario.php");
+if (isset($_POST['funcionarios'])) {
+    header("Location: funcionarios.php");
     exit();
 }
 
-if (isset($_POST['funcionarios_dia'])) {
-    header("Location: funcionarios_dia.php");
-    exit();
+// Verificação do filtro por data
+if (isset($_POST['filtro'])) {
+    // Atualiza $_SESSION['hoje'] com a data selecionada no filtro
+    $_SESSION['hoje'] = $_POST['data'];
 }
 
 // Preparar e executar a consulta SQL usando prepared statements
-$sql_verifica = "SELECT * FROM funcionarios ORDER BY id;";
+$sql_verifica = "SELECT f.cpf, f.id, f.nome, f.email, f.status, p.funcionario_id, p.hora_entrada, p.hora_saida, p.almoco_entrada, p.almoco_saida 
+                FROM funcionarios f 
+                LEFT JOIN pontos p ON f.id = p.funcionario_id 
+                WHERE p.data = ?";
 
 $stmt = $conn->prepare($sql_verifica);
+$stmt->bind_param("s", $_SESSION['hoje']);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -58,11 +68,13 @@ $result = $stmt->get_result();
             <img id="logogts" src="img/logo_gts.png" />
             <div id="tabelauser">
                 <!-- Formulário de filtro por data -->
-                <form class="menu" method="post" action="funcionarios.php">
+                <form class="menu" method="post" action="funcionarios_dia.php">
                     <br>
+                    <label for="data">Filtrar por data:</label>
+                    <input type="date" id="data" name="data" value="<?php echo $_SESSION['hoje']; ?>"><br><br>
                     <div id="btt_func">
-                        <input type="submit" name="add_funcionario" id="filtro" value="Adicionar"/>
-                        <input type="submit" name="funcionarios_dia" id="funcionarios_dia" value="Funcionários trabalhando hoje"/>
+                        <input type="submit" name="filtro" id="filtro" value="Filtrar"/>
+                        <input type="submit" name="funcionarios" id="funcionarios" value="Funcionários cadastrados"/>
                     </div>
                 </form>
 
@@ -71,32 +83,27 @@ $result = $stmt->get_result();
                     <tr>
                         <th>Nome do Funcionário</th>
                         <th>Email</th>
-                        <th>CPF</th>
-                        <th>Cargo</th>
-                        <th>Data de admissão</th>
-                        <th>Ações</th>
+                        <th>Hora de entrada</th>
+                        <th>Foto</th>
+                        <th>Entrada ao almoço</th>
+                        <th>Saída do almoço</th>
+                        <th>Hora de saída</th>
+                        <th>Foto</th>
                     </tr>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <?php $ativoClass = ($row['status'] == 'ativo') ? '' : 'desativado'; ?>
                         <tr class="<?php echo $ativoClass; ?>">
-                            
-                            <td class="txtTabela">
-
-                                <form method="post" action="ver_funcionario.php?id=<?php echo htmlspecialchars($row['id']); ?>">
-                                        <input class="name_ver" type="submit" name="name_ver" value="<?php echo $row['nome']; ?>">
-                                </form>
-
-                            </td>
-
+                            <td class="txtTabela"><?php echo $row['nome']; ?></td>
                             <td class="txtTabela"><?php echo $row['email']; ?></td>
-                            <td class="txtTabela"><?php echo $row['cpf']; ?></td>
-                            <td class="txtTabela"><?php echo $row['cargo']; ?></td>
-                            <td class="txtTabela"><?php echo $row['data_admissao']; ?></td>
-                            <td class="editartd">
-                                <form method="post" action="editar_funcionario.php">
-                                    <input type="hidden" name="funcionario_id" value="<?php echo $row['id']; ?>">
-                                    <input class="editar" type="submit" name="editar" value="Editar">
-                                </form>
+                            <td class="txtTabela"><?php echo $row['hora_entrada']; ?></td>
+                            <td class="tdFoto">
+                                <img class="fotoPessoa" src="uploads/photo_<?php echo $row['cpf'];?>_<?php echo $_SESSION['hoje'];?>_entrando.png" alt="Foto de <?php echo $row['nome'];?> ao entrar">
+                            </td>
+                            <td class="txtTabela"><?php echo $row['almoco_entrada']; ?></td>
+                            <td class="txtTabela"><?php echo $row['almoco_saida']; ?></td>
+                            <td class="txtTabela"><?php echo $row['hora_saida']; ?></td>
+                            <td class="tdFoto">
+                                <img class="fotoPessoa" src="uploads/photo_<?php echo $row['cpf'];?>_<?php echo $_SESSION['hoje'];?>_saindo.png" alt="Foto de <?php echo $row['nome'];?> ao sair">
                             </td>
                         </tr>
                     <?php endwhile; ?>
