@@ -361,6 +361,10 @@ input[name=editar]{
     margin: 30px;
 }
 
+#horast{
+    margin: 20px;
+}
+
 table {
     width: 100%;
 }
@@ -406,7 +410,7 @@ th {
     size: 10px;
 }
 
-#turno, #data_admissao, #admin{
+#turno, #data_admissao, #admin, #cargo{
     border-radius: 15px;
     border: none;
     padding: 10px;
@@ -414,12 +418,6 @@ th {
 }
 
 #data_admissao{
-    background-color: green;
-    margin-bottom: 5px;
-}
-
-#turno{
-    background-color: blue;
     margin-bottom: 5px;
 }
 

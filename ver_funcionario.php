@@ -62,6 +62,7 @@ GROUP BY
     <link rel="icon" href="https://gtsnet.com.br/wp-content/uploads/sites/98/2020/08/cropped-favicon-32x32.png" sizes="32x32">
     <title>Ver Funcionário</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/media.css">
 </head>
 <body>
 
@@ -75,14 +76,18 @@ GROUP BY
                     <br>
                     <label for="mes">Filtrar por mês:</label>
                     <input type="month" id="mes" name="mes" value="<?php echo $_SESSION['mes']; ?>"><br><br>
+                    <input type="submit" name="filtro" id="filtro" value="Filtrar"/>
                     <div id="btt_func">
-                        <input type="submit" name="filtro" id="filtro" value="Filtrar"/>
                         <div id="div_credenciais">
                             <p><b>CPF:</b> <?php echo $funcionario['cpf']; ?></p>
                             <p><b>Nome:</b> <?php echo $funcionario['nome']; ?></p>
                             <p><b>E-mail:</b> <?php echo $funcionario['email']; ?></p>
                             <p><b>Cargo:</b> <?php echo $funcionario['cargo']; ?></p>
-                            <p><b>Turno:</b> <?php echo $funcionario['turno']; ?></p>
+                            <?php if ($funcionario['turno'] == 'dia_todo'): ?>
+                                <p><b>Turno:</b> Dia todo</p>
+                            <?php else: ?>
+                                <p><b>Turno:</b> <?php echo $funcionario['turno']; ?></p>
+                            <?php endif;?>
                             <p><b>Data de admissão:</b> <?php echo date('d/m/Y', strtotime($funcionario['data_admissao'])); ?></p>
                         </div>
                     </div>
@@ -108,7 +113,7 @@ GROUP BY
                     <?php endwhile; ?>
                 </table>
                 <!-- Exibe o total de horas trabalhadas -->
-                <p>Total de horas trabalhadas no mês: <?php echo $horas_total['jornada_liquida']; ?></p>
+                <p id="horast">Total de horas trabalhadas no mês: <?php echo $horas_total['jornada_liquida']; ?></p>
                 <p class="info bt">GTS Net</p>
             </div>
         </div>

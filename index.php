@@ -1,18 +1,14 @@
 <?php
-
 session_start();
 
 if (!$_SESSION['logado']) {
-    //echo 'ssassas';
     header("Location: https://10.10.86.80/login.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="pragma" content="no-cache" />
@@ -21,10 +17,9 @@ if (!$_SESSION['logado']) {
     <link rel="icon" href="https://gtsnet.com.br/wp-content/uploads/sites/98/2020/08/cropped-favicon-32x32.png" sizes="32x32">
     <title>Bater ponto</title>
     <link rel="stylesheet" href="css\style.css">
+    <link rel="stylesheet" href="css/media.css">
 </head>
-
 <body>
-
     <div class="ie-fixMinHeight">
         <div class="main">
             <div class="wrap animated fadeIn" id="principal">
@@ -32,7 +27,6 @@ if (!$_SESSION['logado']) {
                     <img id="logogts" src="img/logo_gts.png"/>
 
 <?php
-
 date_default_timezone_set('America/Sao_Paulo');
 
 $trabalhando = '';
@@ -111,19 +105,12 @@ if (isset($_GET['id'])) {
 
     echo '<br>';
 
-    // Recebe os dados do formulário
-
-    //echo $funcionario_cpf;
-
     if(isset($_POST['entrar'])){
-
         header("Location: foto.php?id=" . $funcionario_cpf . "&id2=" . $funcionario_id . "&atual=entrando");
         exit();
-
     }
 
     if(isset($_POST['inicio_almoco'])){
-
         $hora_almoco = date('H:i:s');
         $dia_almoco = date('Y-m-d');
 
@@ -134,11 +121,9 @@ if (isset($_GET['id'])) {
 
         header("Location: index.php?id=" . $funcionario_cpf);
         exit();
-
     }
 
     if(isset($_POST['final_almoco'])){
-
         $hora_almoco = date('H:i:s');
         $dia_almoco = date('Y-m-d');
 
@@ -149,7 +134,6 @@ if (isset($_GET['id'])) {
 
         header("Location: index.php?id=" . $funcionario_cpf);
         exit();
-
     }
 
     if(isset($_POST['sair-conta'])){
@@ -159,24 +143,15 @@ if (isset($_GET['id'])) {
     }
 
     if(isset($_POST['sair'])){
-
         header("Location: foto.php?id=" . $funcionario_cpf . "&id2=" . $funcionario_id . "&atual=saindo");
         exit();
-
-        //echo "SAIUUUUUUUU";
-}
-
-}else {
-
+    }
+} else {
     if($trabalhando == 'fim'){
-        // Caso não encontre o funcionário, redireciona de volta para a página inicial
         header("Location: login.php");
         exit();
     }
-
 }
-
-
 ?>
                         <?php if ($trabalhando == 'inicio'): ?>
                         <input class="entrar" name="entrar" type="submit" value="Iniciar expediente"/>
@@ -197,16 +172,19 @@ if (isset($_GET['id'])) {
                         <?php if ($trabalhando == 'fim'): ?>
                             <p class="bemvindo">Você já trabalhou hoje</p>
                         <?php endif; ?>
-
-                        <input class="sair-conta" name="sair-conta" type="submit" value="Sair da conta" />
-
                 </form>
-                <p class="info bt">GTS Net</p>
 
+                <form method="post" action="ver_funcionario.php?id=<?php echo htmlspecialchars($row['id']); ?>">
+                    <input class="name_verm" type="submit" name="name_ver" value="Meus Horários">
+                </form>
+
+                <form method="post">
+                    <input class="sair-conta" name="sair-conta" type="submit" value="Sair da conta" />
+                </form>
+
+                <p class="info bt">GTS Net</p>
             </div>
         </div>
     </div>
-
 </body>
-
 </html>

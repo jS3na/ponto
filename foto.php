@@ -102,7 +102,7 @@
             }
         }
 
-        header("Location: inicio.php?id=" . $funcionario_cpf);
+        header("Location: index.php?id=" . $funcionario_cpf);
         exit();
 
     } else {
