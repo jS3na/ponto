@@ -299,25 +299,12 @@ input[type=submit].sair-conta{
     margin-top: 40px;
 }
 
-input[type=submit].editar{
-    background: rgba(255, 255, 255, 0);
-}
-
 input[type=submit].name_ver{
     justify-self: center;
     align-self: center;
     background: none;
     color: black;
     margin-top: 20px;
-}
-
-
-
-input[name=editar]{
-    align-self: center;
-    background-color: transparent;
-    color:rgb(0, 0, 0)
-    
 }
 
 #filtro, #funcionarios{
@@ -536,14 +523,14 @@ input[type=submit].sair:hover{
     background: rgb(138, 0, 0);
 }
 
-input[type=submit].editar:hover,
- input[type=submit].editar:focus{
-    background: rgba(255, 255, 255, 0);
-}
-
 input[type=submit].name_ver:hover,
  input[type=submit].name_ver:focus{
     background-color: rgba(255, 255, 255, 0);
+}
+
+#editarfunc{
+    width: 5%;
+    margin: 10px;
 }
 
 

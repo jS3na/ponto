@@ -174,7 +174,7 @@ if (isset($_GET['id'])) {
                         <?php endif; ?>
                 </form>
 
-                <form method="post" action="ver_funcionario.php?id=<?php echo htmlspecialchars($row['id']); ?>">
+                <form method="post" action="meus_horarios.php?id=<?php echo htmlspecialchars($funcionario_cpf); ?>">
                     <input class="name_verm" type="submit" name="name_ver" value="Meus Horários">
                 </form>
 

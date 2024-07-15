@@ -127,10 +127,10 @@
                 <video id="video" width="325" height="430" muted autoplay playsinline></video>
                 <input type="submit" id="capture" value="Capturar Foto">
                 <p id="perm_cam"></p>
-                <canvas id="canvas" id="photo" width="325" height="490" style="display:none;"></canvas>
+                <canvas id="canvas" id="photo" width="325" height="430" style="display:none;"></canvas>
                 <form id="photoForm" method="post" enctype="multipart/form-data" action="foto.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&id2=<?php echo htmlspecialchars($_GET['id2']); ?>&atual=<?php echo htmlspecialchars($_GET['atual']); ?>">
                     <input type="hidden" name="photo" id="photo">
-                    <img id="photoPreview" src="" alt="Sua foto" style="display:none; width:325px; height:480px;"/>
+                    <img id="photoPreview" src="" alt="Sua foto" style="display:none; width:325px; height:430px;"/>
                     <input type="submit" style="display:none;" id="sendPhotoButton" value="Enviar Foto">
                 </form>
                 <p class="info bt">GTS Net</p>

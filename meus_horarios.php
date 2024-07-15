@@ -1,66 +1,76 @@
 <?php
+
+date_default_timezone_set('America/Sao_Paulo');
+
 include("config.php"); // banco de dados
 
-// Verifica se o ID do funcionário foi passado na URL
+// Verifica se o CPF do funcionário foi passado na URL
 if (isset($_GET['id'])) {
-    $funcionario_id = $_GET['id'];
+    $funcionario_cpf = $_GET['id'];
 
     // Atualiza $_SESSION['mes'] com a data selecionada no filtro
     if (isset($_POST['filtro'])) {
         $_SESSION['mes'] = $_POST['mes'];
     }
 
-    if (isset($_POST['editar'])) {
-        header("Location: editar_funcionario.php?id=" . $funcionario_id);
-        exit();
-    }
+    // Obtém o ID do funcionário pelo CPF
+    $sql_id = "SELECT id FROM funcionarios WHERE cpf = ?";
+    $stmt_id = $conn->prepare($sql_id);
+    $stmt_id->bind_param("s", $funcionario_cpf);
+    $stmt_id->execute();
+    $result_id = $stmt_id->get_result();
 
-    // Ajusta a consulta para considerar valores nulos
-    $sql_horas = "SELECT 
-        funcionario_id, 
-        SEC_TO_TIME(SUM(
-            TIME_TO_SEC(TIMEDIFF(hora_saida, hora_entrada)) - 
-            IFNULL(TIME_TO_SEC(TIMEDIFF(almoco_saida, almoco_entrada)), 0)
-        )) as jornada_liquida
-    FROM 
-        pontos 
-    WHERE 
-        funcionario_id = ?
-    GROUP BY 
-        funcionario_id;";
-    $stmt_horas = $conn->prepare($sql_horas);
-    $stmt_horas->bind_param("i", $funcionario_id);
-    $stmt_horas->execute();
-    $result_horas = $stmt_horas->get_result();
+    if ($result_id->num_rows > 0) {
+        $funcionario_data = $result_id->fetch_assoc();
+        $funcionario_id = $funcionario_data['id'];
+        
+        // Ajusta a consulta para considerar valores nulos
+        $sql_horas = "SELECT 
+            funcionario_id, 
+            SEC_TO_TIME(SUM(
+                TIME_TO_SEC(TIMEDIFF(hora_saida, hora_entrada)) - 
+                IFNULL(TIME_TO_SEC(TIMEDIFF(almoco_saida, almoco_entrada)), 0)
+            )) as jornada_liquida
+        FROM 
+            pontos 
+        WHERE 
+            funcionario_id = ?
+        GROUP BY 
+            funcionario_id;";
+        $stmt_horas = $conn->prepare($sql_horas);
+        $stmt_horas->bind_param("i", $funcionario_id);
+        $stmt_horas->execute();
+        $result_horas = $stmt_horas->get_result();
 
-    $sql = "SELECT id, nome, cpf, email, turno, cargo, data_admissao FROM funcionarios WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $funcionario_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    // Verifica se encontrou o funcionário
-    if ($result->num_rows > 0) {
-        $funcionario = $result->fetch_assoc();
-        $horas_total = $result_horas->fetch_assoc();
-
-        // Obtém o mês e ano do filtro
-        $mes = isset($_SESSION['mes']) ? $_SESSION['mes'] : date('Y-m');
-
-        // Ajusta a consulta para filtrar por mês e ano
-        $sql_verifica = "SELECT f.cpf, f.id, f.nome, f.email, f.status, p.funcionario_id, p.hora_entrada, p.hora_saida, p.almoco_entrada, p.almoco_saida, p.data 
-                        FROM funcionarios f 
-                        LEFT JOIN pontos p ON f.id = p.funcionario_id 
-                        WHERE f.id = ? AND DATE_FORMAT(p.data, '%Y-%m') = ? 
-                        ORDER BY p.data DESC";
-
-        $stmt = $conn->prepare($sql_verifica);
-        $stmt->bind_param("is", $funcionario_id, $mes);
+        $sql = "SELECT id, nome, cpf, email, turno, cargo, data_admissao FROM funcionarios WHERE cpf = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $funcionario_cpf);
         $stmt->execute();
         $result = $stmt->get_result();
 
-        // Variável para armazenar o total de segundos trabalhados
-        $total_segundos = 0;
+        // Verifica se encontrou o funcionário
+        if ($result->num_rows > 0) {
+            $funcionario = $result->fetch_assoc();
+            $horas_total = $result_horas->fetch_assoc();
+
+            // Obtém o mês e ano do filtro
+            $mes = isset($_SESSION['mes']) ? $_SESSION['mes'] : date('Y-m');
+
+            // Ajusta a consulta para filtrar por mês e ano
+            $sql_verifica = "SELECT f.cpf, f.id, f.nome, f.email, f.status, p.funcionario_id, p.hora_entrada, p.hora_saida, p.almoco_entrada, p.almoco_saida, p.data 
+                            FROM funcionarios f 
+                            LEFT JOIN pontos p ON f.id = p.funcionario_id 
+                            WHERE f.cpf = ? AND DATE_FORMAT(p.data, '%Y-%m') = ? 
+                            ORDER BY p.data DESC";
+
+            $stmt = $conn->prepare($sql_verifica);
+            $stmt->bind_param("ss", $funcionario_cpf, $mes);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            // Variável para armazenar o total de segundos trabalhados
+            $total_segundos = 0;
+        }
     }
 ?>
 
@@ -83,12 +93,11 @@ if (isset($_GET['id'])) {
             <img id="logogts" src="img/logo_gts.png" />
             <div id="tabelauser">
                 <!-- Formulário de filtro por mês -->
-                <form class="menu" method="post" action="ver_funcionario.php?id=<?php echo $funcionario_id; ?>">
+                <form class="menu" method="post" action="meus_horarios.php?id=<?php echo $funcionario_cpf; ?>">
                     <br>
                     <label for="mes">Filtrar por mês:</label>
                     <input type="month" id="mes" name="mes" value="<?php echo $_SESSION['mes']; ?>"><br><br>
                     <input type="submit" name="filtro" id="filtro" value="Filtrar"/>
-                    <input type="submit" name="editar" id="editarfunc" value="Editar"/>
                     <div id="btt_func">
                         <div id="div_credenciais">
                             <p><b>CPF:</b> <?php echo $funcionario['cpf']; ?></p>

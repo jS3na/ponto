@@ -74,7 +74,6 @@ $result = $stmt->get_result();
                         <th>CPF</th>
                         <th>Cargo</th>
                         <th>Data de admissão</th>
-                        <th>Ações</th>
                     </tr>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <?php $ativoClass = ($row['status'] == 'ativo') ? '' : 'desativado'; ?>
@@ -92,12 +91,6 @@ $result = $stmt->get_result();
                             <td class="txtTabela"><?php echo $row['cpf']; ?></td>
                             <td class="txtTabela"><?php echo $row['cargo']; ?></td>
                             <td class="txtTabela"><?php echo $row['data_admissao']; ?></td>
-                            <td class="editartd">
-                                <form method="post" action="editar_funcionario.php">
-                                    <input type="hidden" name="funcionario_id" value="<?php echo $row['id']; ?>">
-                                    <input class="editar" type="submit" name="editar" value="Editar">
-                                </form>
-                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </table>
